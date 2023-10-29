@@ -24,8 +24,7 @@ func shortURLHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-
-	u, err := url.Parse(string(bs))
+	u, err := url.ParseRequestURI(string(bs))
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
