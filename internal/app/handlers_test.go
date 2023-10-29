@@ -69,6 +69,7 @@ func TestOriginURLHandler(t *testing.T) {
 			originURLHandler(w, r)
 
 			res := w.Result()
+			defer res.Body.Close()
 
 			assert.Equal(t, tt.want.code, res.StatusCode)
 			assert.Equal(t, tt.want.locationHeader, res.Header.Get("Location"))
