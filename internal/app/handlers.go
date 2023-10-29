@@ -9,6 +9,11 @@ import (
 	"urlshort/internal/db"
 )
 
+var (
+	// For testing purposes
+	findURL = db.FindURL
+)
+
 const baseURL = "http://localhost:8080"
 
 // shortURLHandler creates short url for a given full url string
@@ -54,7 +59,7 @@ func originURLHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	key := urlPath[1:]
 
-	origURL, err := db.FindURL(key)
+	origURL, err := findURL(key)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
