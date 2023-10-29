@@ -1,10 +1,10 @@
 package app
 
 import (
-	"bytes"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"urlshort/internal/db"
@@ -132,7 +132,7 @@ func TestShortURLHandler(t *testing.T) {
 		}
 		t.Run(tt.name, func(t *testing.T) {
 			r := httptest.NewRequest(http.MethodPost, "/",
-				bytes.NewBufferString(tt.want.body))
+				strings.NewReader(tt.want.body))
 			w := httptest.NewRecorder()
 			shortURLHandler(w, r)
 
