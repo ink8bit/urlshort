@@ -17,9 +17,9 @@ var (
 	decoded = make(map[string]string)
 )
 
-// Save saves original url and id into two maps:
+// SaveURL saves original url and id into two maps:
 // encoded and decoded.
-func Save(origURL string) string {
+func SaveURL(origURL string) string {
 	id := strconv.Itoa(len(encoded) + 1)
 	encoded[origURL] = id
 	decoded[id] = origURL

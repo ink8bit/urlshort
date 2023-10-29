@@ -12,6 +12,7 @@ import (
 var (
 	// For testing purposes
 	findURL = db.FindURL
+	saveURL = db.SaveURL
 )
 
 const baseURL = "http://localhost:8080"
@@ -21,21 +22,21 @@ const baseURL = "http://localhost:8080"
 func shortURLHandler(w http.ResponseWriter, r *http.Request) {
 	bs, err := io.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		http.Error(w, http.StatusText(http.StatusBadRequest),
+			http.StatusBadRequest)
 		return
 	}
 	u, err := url.ParseRequestURI(string(bs))
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		http.Error(w, http.StatusText(http.StatusBadRequest),
+			http.StatusBadRequest)
 		return
 	}
-
 	origURL := u.String()
 	w.Header().Set("Content-Type", "text/plain")
-
 	id, err := db.FindID(origURL)
 	if err != nil {
-		id := db.Save(origURL)
+		id := saveURL(origURL)
 		shortURL := fmt.Sprintf("%v/%v", baseURL, id)
 		w.WriteHeader(http.StatusCreated)
 		w.Write([]byte(shortURL))
@@ -53,14 +54,16 @@ func originURLHandler(w http.ResponseWriter, r *http.Request) {
 	// the length of url path less than 2 symbols
 	urlPath := r.URL.Path
 	if len(urlPath) < 2 {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		http.Error(w, http.StatusText(http.StatusBadRequest),
+			http.StatusBadRequest)
 		return
 	}
 	key := urlPath[1:]
 
 	origURL, err := findURL(key)
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		http.Error(w, http.StatusText(http.StatusNotFound),
+			http.StatusNotFound)
 		return
 	}
 	w.Header().Set("Location", origURL)
