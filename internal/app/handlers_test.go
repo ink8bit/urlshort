@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"urlshort/internal/db"
+	"urlshort/internal/storage"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -60,7 +60,7 @@ func TestOriginURLHandler(t *testing.T) {
 				return fakeOrigURL, nil
 			}
 			defer func() {
-				findURL = db.FindURL
+				findURL = storage.FindURL
 			}()
 		}
 		t.Run(tt.name, func(t *testing.T) {
@@ -126,8 +126,8 @@ func TestShortURLHandler(t *testing.T) {
 				return "1"
 			}
 			defer func() {
-				findURL = db.FindURL
-				saveURL = db.SaveURL
+				findURL = storage.FindURL
+				saveURL = storage.SaveURL
 			}()
 		}
 		t.Run(tt.name, func(t *testing.T) {

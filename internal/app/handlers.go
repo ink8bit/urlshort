@@ -6,13 +6,13 @@ import (
 	"net/http"
 	"net/url"
 
-	"urlshort/internal/db"
+	"urlshort/internal/storage"
 )
 
 var (
 	// For testing purposes
-	findURL = db.FindURL
-	saveURL = db.SaveURL
+	findURL = storage.FindURL
+	saveURL = storage.SaveURL
 )
 
 const baseURL = "http://localhost:8080"
@@ -34,7 +34,7 @@ func shortURLHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	origURL := u.String()
 	w.Header().Set("Content-Type", "text/plain")
-	id, err := db.FindID(origURL)
+	id, err := storage.FindID(origURL)
 	if err != nil {
 		id := saveURL(origURL)
 		shortURL := fmt.Sprintf("%v/%v", baseURL, id)
