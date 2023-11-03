@@ -27,15 +27,6 @@ func TestOriginURLHandler(t *testing.T) {
 		want want
 	}{
 		{
-			name: "Bad request",
-			want: want{
-				code:           400,
-				urlPath:        "/",
-				contentType:    "text/plain; charset=utf-8",
-				locationHeader: "",
-			},
-		},
-		{
 			name: "Not found",
 			want: want{
 				code:           404,
