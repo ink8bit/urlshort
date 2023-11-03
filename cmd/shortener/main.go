@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	"urlshort/internal/app"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func main() {
@@ -12,5 +14,10 @@ func main() {
 }
 
 func run() error {
-	return http.ListenAndServe(":8080", http.HandlerFunc(app.Mux))
+	r := chi.NewRouter()
+
+	r.Get("/{id:^[0-9]}", app.OriginURLHandler)
+	r.Post("/", app.ShortURLHandler)
+
+	return http.ListenAndServe(":8080", r)
 }

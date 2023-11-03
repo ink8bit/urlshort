@@ -7,6 +7,8 @@ import (
 	"net/url"
 
 	"urlshort/internal/storage"
+
+	"github.com/go-chi/chi/v5"
 )
 
 var (
@@ -17,9 +19,9 @@ var (
 
 const baseURL = "http://localhost:8080"
 
-// shortURLHandler creates short url for a given full url string
+// ShortURLHandler creates short url for a given full url string
 // if no full url found in DB.
-func shortURLHandler(w http.ResponseWriter, r *http.Request) {
+func ShortURLHandler(w http.ResponseWriter, r *http.Request) {
 	bs, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest),
@@ -47,20 +49,11 @@ func shortURLHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(shortURL))
 }
 
-// originURLHandler redirects the user to the original url
+// OriginURLHandler redirects the user to the original url
 // after providing short url, or return "Not found".
-func originURLHandler(w http.ResponseWriter, r *http.Request) {
-	// Valid IDs are /1, /12, etc. therefore we should check
-	// the length of url path less than 2 symbols
-	urlPath := r.URL.Path
-	if len(urlPath) < 2 {
-		http.Error(w, http.StatusText(http.StatusBadRequest),
-			http.StatusBadRequest)
-		return
-	}
-	key := urlPath[1:]
-
-	origURL, err := findURL(key)
+func OriginURLHandler(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	origURL, err := findURL(id)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound),
 			http.StatusNotFound)
@@ -68,17 +61,4 @@ func originURLHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Location", origURL)
 	w.WriteHeader(http.StatusTemporaryRedirect)
-}
-
-// Mux is a multiplexer which routes every request to specific handlers.
-// Allowed HTTP methods: GET, POST.
-func Mux(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		originURLHandler(w, r)
-	case http.MethodPost:
-		shortURLHandler(w, r)
-	default:
-		w.WriteHeader(http.StatusMethodNotAllowed)
-	}
 }

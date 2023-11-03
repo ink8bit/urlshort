@@ -66,7 +66,7 @@ func TestOriginURLHandler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			r := httptest.NewRequest(http.MethodGet, tt.want.urlPath, http.NoBody)
 			w := httptest.NewRecorder()
-			originURLHandler(w, r)
+			OriginURLHandler(w, r)
 
 			res := w.Result()
 			defer res.Body.Close()
@@ -134,7 +134,7 @@ func TestShortURLHandler(t *testing.T) {
 			r := httptest.NewRequest(http.MethodPost, "/",
 				strings.NewReader(tt.want.body))
 			w := httptest.NewRecorder()
-			shortURLHandler(w, r)
+			ShortURLHandler(w, r)
 
 			res := w.Result()
 
