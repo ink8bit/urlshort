@@ -55,7 +55,8 @@ func TestOriginURLHandler(t *testing.T) {
 			}()
 		}
 		t.Run(tt.name, func(t *testing.T) {
-			r := httptest.NewRequest(http.MethodGet, tt.want.urlPath, http.NoBody)
+			r := httptest.NewRequest(http.MethodGet,
+				tt.want.urlPath, http.NoBody)
 			w := httptest.NewRecorder()
 			originURLHandler(w, r)
 
@@ -63,8 +64,10 @@ func TestOriginURLHandler(t *testing.T) {
 			defer res.Body.Close()
 
 			assert.Equal(t, tt.want.code, res.StatusCode)
-			assert.Equal(t, tt.want.locationHeader, res.Header.Get("Location"))
-			assert.Equal(t, tt.want.contentType, res.Header.Get("Content-Type"))
+			assert.Equal(t, tt.want.locationHeader,
+				res.Header.Get("Location"))
+			assert.Equal(t, tt.want.contentType,
+				res.Header.Get("Content-Type"))
 		})
 	}
 }
