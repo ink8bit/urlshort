@@ -62,10 +62,3 @@ func originURLHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Location", origURL)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
-
-func Router() chi.Router {
-	r := chi.NewRouter()
-	r.Get("/{id:^[0-9]}", originURLHandler)
-	r.Post("/", shortURLHandler)
-	return r
-}
