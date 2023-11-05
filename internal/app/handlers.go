@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"urlshort/internal/config"
 	"urlshort/internal/storage"
 
 	"github.com/go-chi/chi/v5"
@@ -16,8 +17,6 @@ var (
 	findURL = storage.FindURL
 	saveURL = storage.SaveURL
 )
-
-const baseURL = "http://localhost:8080"
 
 // shortURLHandler creates short url for a given full url string
 // if no full url found in DB.
@@ -39,13 +38,13 @@ func shortURLHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := storage.FindShortURL(origURL)
 	if err != nil {
 		id := saveURL(origURL)
-		shortURL := fmt.Sprintf("%v/%v", baseURL, id)
+		shortURL := fmt.Sprintf("%v/%v", config.BaseURL, id)
 		w.WriteHeader(http.StatusCreated)
 		w.Write([]byte(shortURL))
 		return
 	}
 
-	shortURL := fmt.Sprintf("%v/%v", baseURL, id)
+	shortURL := fmt.Sprintf("%v/%v", config.BaseURL, id)
 	w.Write([]byte(shortURL))
 }
 

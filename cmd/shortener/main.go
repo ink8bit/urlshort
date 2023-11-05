@@ -6,15 +6,16 @@ import (
 	"net/http"
 
 	"urlshort/internal/app"
+	"urlshort/internal/config"
 )
 
 func main() {
-	parseFlags()
+	config.ParseFlags()
 
 	log.Fatal(run())
 }
 
 func run() error {
-	fmt.Printf("Running server on address %s", addr)
-	return http.ListenAndServe(addr, app.Router())
+	fmt.Printf("Running server on address %s", config.Addr)
+	return http.ListenAndServe(config.Addr, app.Router())
 }
