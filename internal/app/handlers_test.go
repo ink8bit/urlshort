@@ -72,7 +72,6 @@ func TestOriginURLHandler(t *testing.T) {
 }
 
 func TestShortURLHandler(t *testing.T) {
-	t.SkipNow()
 	type want struct {
 		code        int
 		body        string
