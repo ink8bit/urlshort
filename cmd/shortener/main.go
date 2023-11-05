@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -8,9 +9,12 @@ import (
 )
 
 func main() {
+	parseFlags()
+
 	log.Fatal(run())
 }
 
 func run() error {
-	return http.ListenAndServe(":8080", app.Router())
+	fmt.Printf("Running server on address %s", addr)
+	return http.ListenAndServe(addr, app.Router())
 }
