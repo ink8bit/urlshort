@@ -2,7 +2,7 @@ package storage
 
 import (
 	"errors"
-	"strconv"
+	"urlshort/internal/shorten"
 )
 
 // NOTE: it's a temporary solution.
@@ -17,29 +17,28 @@ var (
 	origUrls  = make(map[string]string)
 )
 
-// SaveURL saves original url and id into two maps:
-// encoded and decoded.
+// SaveURL saves original and short urls to storage.
 func SaveURL(origURL string) string {
-	id := strconv.Itoa(len(shortUrls) + 1)
+	id := shorten.GenStr()
 	shortUrls[origURL] = id
 	origUrls[id] = origURL
 	return id
 }
 
-// FindURL returns original url string by a given id.
-func FindURL(id string) (string, error) {
-	origURL, ok := origUrls[id]
+// FindURL returns original url by a given short one.
+func FindURL(shortURL string) (string, error) {
+	origURL, ok := origUrls[shortURL]
 	if !ok {
-		return "", errors.New("url not found")
+		return "", errors.New("original url not found")
 	}
 	return origURL, nil
 }
 
-// FindID returns id by a given original url.
-func FindID(origURL string) (string, error) {
+// FindShortURL returns short url by a given original url.
+func FindShortURL(origURL string) (string, error) {
 	id, ok := shortUrls[origURL]
 	if !ok {
-		return "", errors.New("id not found")
+		return "", errors.New("short url not found")
 	}
 	return id, nil
 }
