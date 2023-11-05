@@ -16,6 +16,6 @@ func main() {
 }
 
 func run() error {
-	fmt.Printf("Running server on address %s", config.Addr)
+	fmt.Println("Running server on address", config.Addr)
 	return http.ListenAndServe(config.Addr, app.Router())
 }

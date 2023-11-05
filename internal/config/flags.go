@@ -11,6 +11,6 @@ var (
 
 func ParseFlags() {
 	flag.StringVar(&Addr, "a", ":8080", "address and port to run server")
-	flag.StringVar(&BaseURL, "b", "", "short url prefix")
+	flag.StringVar(&BaseURL, "b", "http://localhost:8080", "short url prefix")
 	flag.Parse()
 }
