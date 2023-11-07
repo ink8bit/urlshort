@@ -17,12 +17,12 @@ var (
 	origUrls  = make(map[string]string)
 )
 
-// SaveURL saves original and short urls to storage.
-func SaveURL(origURL string) string {
+// SaveURL saves original and shortened urls to the storage.
+func SaveURL(origURL string) (string, error) {
 	id := shorten.GenRandomStr()
 	shortUrls[origURL] = id
 	origUrls[id] = origURL
-	return id
+	return id, nil
 }
 
 // FindURL returns original url by a given short one.
