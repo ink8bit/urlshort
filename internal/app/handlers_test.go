@@ -60,7 +60,9 @@ func TestOriginURLHandler(t *testing.T) {
 			originURLHandler(w, r)
 
 			res := w.Result()
-			defer res.Body.Close()
+			defer func() {
+				_ = res.Body.Close()
+			}()
 
 			assert.Equal(t, tt.want.code, res.StatusCode)
 			assert.Equal(t, tt.want.locationHeader,
@@ -133,7 +135,10 @@ func TestShortURLHandler(t *testing.T) {
 
 			assert.Equal(t, tt.want.code, res.StatusCode)
 
-			defer res.Body.Close()
+			defer func() {
+				_ = res.Body.Close()
+			}()
+
 			_, err := io.ReadAll(res.Body)
 
 			require.NoError(t, err)

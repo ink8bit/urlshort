@@ -17,5 +17,9 @@ func main() {
 
 func run() error {
 	fmt.Println("Running server on address", config.Addr)
-	return http.ListenAndServe(config.Addr, app.Router())
+	err := http.ListenAndServe(config.Addr, app.Router())
+	if err != nil {
+		return fmt.Errorf("can't start the server: %w", err)
+	}
+	return nil
 }
