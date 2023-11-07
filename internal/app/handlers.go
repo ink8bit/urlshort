@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -13,7 +12,7 @@ import (
 )
 
 var (
-	// For testing purposes
+	// For testing purposes.
 	findURL = storage.FindURL
 	saveURL = storage.SaveURL
 )
@@ -43,14 +42,14 @@ func shortURLHandler(w http.ResponseWriter, r *http.Request) {
 				http.StatusBadRequest)
 			return
 		}
-		shortURL := fmt.Sprintf("%v/%v", config.BaseURL, id)
+		shortURL := config.BaseURL + "/" + id
 		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte(shortURL))
+		_, _ = w.Write([]byte(shortURL))
 		return
 	}
 
-	shortURL := fmt.Sprintf("%v/%v", config.BaseURL, id)
-	w.Write([]byte(shortURL))
+	shortURL := config.BaseURL + "/" + id
+	_, _ = w.Write([]byte(shortURL))
 }
 
 // originURLHandler redirects the user to the original url
