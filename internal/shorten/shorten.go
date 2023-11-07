@@ -5,8 +5,10 @@ import (
 	"strings"
 )
 
-// GenStr creates randomized string from letters and digits.
-func GenStr() string {
+// GenRandomStr creates randomized string from upper- and
+// lowercased english letters and digits.
+// The final length of the output string equals seven characters.
+func GenRandomStr() string {
 	defaultSize := 7
 	lower := "abcdefghijklmnopqrstuvwxyz"
 	upper := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
