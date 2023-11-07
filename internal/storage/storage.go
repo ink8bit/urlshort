@@ -19,7 +19,7 @@ var (
 
 // SaveURL saves original and short urls to storage.
 func SaveURL(origURL string) string {
-	id := shorten.GenStr()
+	id := shorten.GenRandomStr()
 	shortUrls[origURL] = id
 	origUrls[id] = origURL
 	return id
