@@ -37,7 +37,12 @@ func shortURLHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	id, err := storage.FindShortURL(origURL)
 	if err != nil {
-		id := saveURL(origURL)
+		id, err := saveURL(origURL)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusBadRequest),
+				http.StatusBadRequest)
+			return
+		}
 		shortURL := fmt.Sprintf("%v/%v", config.BaseURL, id)
 		w.WriteHeader(http.StatusCreated)
 		w.Write([]byte(shortURL))

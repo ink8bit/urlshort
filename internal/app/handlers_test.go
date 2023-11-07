@@ -115,8 +115,8 @@ func TestShortURLHandler(t *testing.T) {
 			findURL = func(id string) (string, error) {
 				return "1", nil
 			}
-			saveURL = func(origURL string) string {
-				return "1"
+			saveURL = func(origURL string) (string, error) {
+				return "1", nil
 			}
 			defer func() {
 				findURL = storage.FindURL
