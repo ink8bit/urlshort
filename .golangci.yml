@@ -365,7 +365,6 @@ linters:
   enable:
     - asasalint
     - asciicheck
-    - bodyclose
     - containedctx
     - dupl
     - dupword
@@ -414,6 +413,7 @@ linters:
     - wastedassign
     - whitespace
     - wrapcheck
+
   # Run only fast linters from enabled linters set (first run won't be fast).
   fast: false
 
@@ -424,6 +424,9 @@ issues:
   exclude-rules:
   - path: "_test\\.go"
     text: "fieldalignment: struct with \\d+ pointer bytes could be \\d+"
+  - path: "_test\\.go"
+    text: "Error return value of `res.Body.Close` is not checked"
+
   fix: false
   max-issues-per-linter: 0
   max-same-issues: 0

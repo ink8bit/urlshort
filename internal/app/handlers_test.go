@@ -42,9 +42,8 @@ func TestOriginURLHandlerNotFound(t *testing.T) {
 	server.OriginURLHandler(w, r)
 
 	res := w.Result()
-	defer func() {
-		_ = res.Body.Close()
-	}()
+
+	defer res.Body.Close()
 
 	assert.Equal(t, tt.code, res.StatusCode)
 	assert.Equal(t, tt.locationHeader, res.Header.Get("Location"))
@@ -106,9 +105,8 @@ func TestOriginURLHandlerTemporaryRedirect(t *testing.T) {
 	server.OriginURLHandler(w, r)
 
 	res := w.Result()
-	defer func() {
-		_ = res.Body.Close()
-	}()
+
+	defer res.Body.Close()
 
 	assert.Equal(t, tt.code, res.StatusCode)
 	assert.Equal(t, origURL, res.Header.Get("Location"))
@@ -169,9 +167,7 @@ func TestShortURLHandler(t *testing.T) {
 
 			assert.Equal(t, tt.want.code, res.StatusCode)
 
-			defer func() {
-				_ = res.Body.Close()
-			}()
+			defer res.Body.Close()
 
 			_, err := io.ReadAll(res.Body)
 
