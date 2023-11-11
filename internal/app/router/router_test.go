@@ -1,7 +1,6 @@
 package router
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -36,7 +35,9 @@ func TestRouterGet(t *testing.T) {
 			res, err := http.Get(tt.urlStr)
 			require.NoError(t, err)
 
-			defer res.Body.Close()
+			defer func() {
+				_ = res.Body.Close()
+			}()
 
 			if res.StatusCode != tt.code {
 				t.Errorf("expected status %q; got %v",
@@ -44,7 +45,6 @@ func TestRouterGet(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestRouterPost(t *testing.T) {
@@ -56,7 +56,8 @@ func TestRouterPost(t *testing.T) {
 	defer srv.Close()
 
 	t.Cleanup(func() {
-		storage.Cleanup()
+		err := storage.Cleanup()
+		require.NoError(t, err)
 	})
 
 	tests := []struct {
@@ -73,10 +74,12 @@ func TestRouterPost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, err := http.Post(fmt.Sprintf("%s", srv.URL), "text/plain", strings.NewReader(tt.body))
+			res, err := http.Post(srv.URL, "text/plain", strings.NewReader(tt.body))
 			require.NoError(t, err)
 
-			defer res.Body.Close()
+			defer func() {
+				_ = res.Body.Close()
+			}()
 
 			if res.StatusCode != tt.code {
 				t.Errorf("expected status %q; got %v",
@@ -84,5 +87,4 @@ func TestRouterPost(t *testing.T) {
 			}
 		})
 	}
-
 }

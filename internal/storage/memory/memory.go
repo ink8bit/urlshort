@@ -56,7 +56,8 @@ func (m *Memory) FindShortURL(origURL string) (string, error) {
 }
 
 // Cleanup removes all records from in-memory storage.
-func (m *Memory) Cleanup() {
+func (m *Memory) Cleanup() error {
 	m.shortUrls = make(map[string]string)
 	m.origUrls = make(map[string]string)
+	return nil
 }

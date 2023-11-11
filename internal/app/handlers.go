@@ -10,7 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// shortURLHandler creates short url for a given full url string
+// ShortURLHandler creates short url for a given full url string
 // if no full url found in DB.
 func (s *Server) ShortURLHandler(w http.ResponseWriter, r *http.Request) {
 	bs, err := io.ReadAll(r.Body)
@@ -45,7 +45,7 @@ func (s *Server) ShortURLHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte(shortURL))
 }
 
-// originURLHandler redirects the user to the original url
+// OriginURLHandler redirects the user to the original url
 // after providing short url, or return "Not found".
 func (s *Server) OriginURLHandler(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
