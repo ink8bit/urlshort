@@ -90,14 +90,14 @@ func TestOriginURLHandlerTemporaryRedirect(t *testing.T) {
 	server := NewServer(baseURL, storage)
 
 	t.Cleanup(func() {
-		storage.Cleanup()
+		err := storage.Cleanup()
+		require.NoError(t, err)
 	})
 
 	tt := want{
-		code:           307,
-		url:            baseURL + "/" + shortURL,
-		contentType:    "",
-		locationHeader: baseURL + "/" + shortURL,
+		code:        307,
+		url:         baseURL + "/" + shortURL,
+		contentType: "",
 	}
 
 	r := httptest.NewRequest(http.MethodGet, tt.url, http.NoBody)

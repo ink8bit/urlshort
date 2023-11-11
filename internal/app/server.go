@@ -5,8 +5,8 @@ import "urlshort/internal/storage"
 const baseURL = "http://localhost:8080"
 
 type Server struct {
-	baseURL string
 	storage storage.Storage
+	baseURL string
 }
 
 func NewServer(baseURL string, storage storage.Storage) *Server {
