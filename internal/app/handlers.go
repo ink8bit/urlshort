@@ -6,20 +6,13 @@ import (
 	"net/url"
 
 	"urlshort/internal/config"
-	"urlshort/internal/storage"
 
 	"github.com/go-chi/chi/v5"
 )
 
-var (
-	// For testing purposes.
-	findURL = storage.FindURL
-	saveURL = storage.SaveURL
-)
-
 // shortURLHandler creates short url for a given full url string
 // if no full url found in DB.
-func shortURLHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) ShortURLHandler(w http.ResponseWriter, r *http.Request) {
 	bs, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest),
@@ -34,9 +27,9 @@ func shortURLHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	origURL := u.String()
 	w.Header().Set("Content-Type", "text/plain")
-	id, err := storage.FindShortURL(origURL)
+	id, err := s.storage.FindShortURL(origURL)
 	if err != nil {
-		id, err := saveURL(origURL)
+		id, err := s.storage.SaveURL(origURL)
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusBadRequest),
 				http.StatusBadRequest)
@@ -54,9 +47,9 @@ func shortURLHandler(w http.ResponseWriter, r *http.Request) {
 
 // originURLHandler redirects the user to the original url
 // after providing short url, or return "Not found".
-func originURLHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) OriginURLHandler(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	origURL, err := findURL(id)
+	origURL, err := s.storage.FindURL(id)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusNotFound),
 			http.StatusNotFound)
