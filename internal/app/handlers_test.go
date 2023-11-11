@@ -7,70 +7,112 @@ import (
 	"strings"
 	"testing"
 
-	"urlshort/internal/storage"
+	"urlshort/internal/storage/memory"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestOriginURLHandler(t *testing.T) {
-	fakeOrigURL := "http://example.com"
-	type want struct {
-		code           int
-		url            string
-		contentType    string
-		locationHeader string
-	}
-	tests := []struct {
-		name string
-		want want
-	}{
-		{
-			name: "Not found",
-			want: want{
-				code:           404,
-				url:            "http://localhost:8080/1",
-				contentType:    "text/plain; charset=utf-8",
-				locationHeader: "",
-			},
-		},
-		{
-			name: "Temporary Redirect",
-			want: want{
-				code:           307,
-				url:            "http://localhost:8080/1",
-				contentType:    "",
-				locationHeader: fakeOrigURL,
-			},
-		},
-	}
-	for _, tt := range tests {
-		if tt.want.code == http.StatusTemporaryRedirect {
-			findURL = func(id string) (string, error) {
-				return fakeOrigURL, nil
-			}
-			defer func() {
-				findURL = storage.FindURL
-			}()
-		}
-		t.Run(tt.name, func(t *testing.T) {
-			r := httptest.NewRequest(http.MethodGet, tt.want.url,
-				http.NoBody)
-			w := httptest.NewRecorder()
-			originURLHandler(w, r)
+const (
+	fakeURL = "a1b2c3"
+	origURL = "https://go.dev"
+)
 
-			res := w.Result()
-			defer func() {
-				_ = res.Body.Close()
-			}()
+type want struct {
+	code           int
+	url            string
+	contentType    string
+	locationHeader string
+}
 
-			assert.Equal(t, tt.want.code, res.StatusCode)
-			assert.Equal(t, tt.want.locationHeader,
-				res.Header.Get("Location"))
-			assert.Equal(t, tt.want.contentType,
-				res.Header.Get("Content-Type"))
-		})
+func TestOriginURLHandlerNotFound(t *testing.T) {
+	tt := want{
+		code:           404,
+		url:            baseURL + "/1",
+		contentType:    "text/plain; charset=utf-8",
+		locationHeader: "",
 	}
+
+	storage := memory.New()
+	server := NewServer(baseURL, storage)
+
+	r := httptest.NewRequest(http.MethodGet, tt.url, http.NoBody)
+	w := httptest.NewRecorder()
+
+	server.OriginURLHandler(w, r)
+
+	res := w.Result()
+	defer func() {
+		_ = res.Body.Close()
+	}()
+
+	assert.Equal(t, tt.code, res.StatusCode)
+	assert.Equal(t, tt.locationHeader, res.Header.Get("Location"))
+	assert.Equal(t, tt.contentType, res.Header.Get("Content-Type"))
+}
+
+type fakeMemory struct {
+	shortUrls map[string]string
+	origUrls  map[string]string
+}
+
+func NewFakeMemory() *fakeMemory {
+	m := fakeMemory{
+		shortUrls: make(map[string]string),
+		origUrls:  make(map[string]string),
+	}
+	return &m
+}
+
+func (m *fakeMemory) SaveURL(u string) (string, error) {
+	return fakeURL, nil
+}
+
+func (m *fakeMemory) FindURL(u string) (string, error) {
+	return origURL, nil
+}
+
+func (m *fakeMemory) FindShortURL(u string) (string, error) {
+	return fakeURL, nil
+}
+
+func (m *fakeMemory) Cleanup() error {
+	m.shortUrls = make(map[string]string)
+	m.origUrls = make(map[string]string)
+	return nil
+}
+
+func TestOriginURLHandlerTemporaryRedirect(t *testing.T) {
+	storage := NewFakeMemory()
+	shortURL, err := storage.SaveURL(origURL)
+	require.NoError(t, err)
+
+	server := NewServer(baseURL, storage)
+
+	t.Cleanup(func() {
+		storage.Cleanup()
+	})
+
+	tt := want{
+		code:           307,
+		url:            baseURL + "/" + shortURL,
+		contentType:    "",
+		locationHeader: baseURL + "/" + shortURL,
+	}
+
+	r := httptest.NewRequest(http.MethodGet, tt.url, http.NoBody)
+	w := httptest.NewRecorder()
+
+	server.OriginURLHandler(w, r)
+
+	res := w.Result()
+	defer func() {
+		_ = res.Body.Close()
+	}()
+
+	assert.Equal(t, tt.code, res.StatusCode)
+	assert.Equal(t, origURL, res.Header.Get("Location"))
+	assert.Equal(t, tt.contentType, res.Header.Get("Content-Type"))
 }
 
 func TestShortURLHandler(t *testing.T) {
@@ -112,25 +154,17 @@ func TestShortURLHandler(t *testing.T) {
 			},
 		},
 	}
+
+	storage := memory.New()
+	server := NewServer(baseURL, storage)
+
 	for _, tt := range tests {
-		if tt.want.code == http.StatusOK {
-			findURL = func(id string) (string, error) {
-				return "1", nil
-			}
-			saveURL = func(origURL string) (string, error) {
-				return "1", nil
-			}
-			defer func() {
-				findURL = storage.FindURL
-				saveURL = storage.SaveURL
-			}()
-		}
 		t.Run(tt.name, func(t *testing.T) {
 			r := httptest.NewRequest(http.MethodPost, "/",
 				strings.NewReader(tt.want.body))
 			w := httptest.NewRecorder()
-			shortURLHandler(w, r)
 
+			server.ShortURLHandler(w, r)
 			res := w.Result()
 
 			assert.Equal(t, tt.want.code, res.StatusCode)
