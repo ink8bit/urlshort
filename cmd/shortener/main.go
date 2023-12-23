@@ -22,9 +22,16 @@ func main() {
 func run() error {
 	logger, err := zap.NewDevelopment()
 	if err != nil {
-		panic("cannot initialize zap")
+		return fmt.Errorf("cannot initialize zap logger: %w", err)
 	}
-	defer logger.Sync()
+	defer func() error {
+		err := logger.Sync()
+		if err != nil {
+			return fmt.Errorf("logger error: %w", err)
+		}
+		return nil
+	}()
+
 	sugar := logger.Sugar()
 
 	sugar.Info("Created a logger")
