@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"urlshort/internal/app"
 	"urlshort/internal/app/router"
 	"urlshort/internal/config"
 	"urlshort/internal/storage/memory"
+
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -17,6 +20,15 @@ func main() {
 }
 
 func run() error {
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		panic("cannot initialize zap")
+	}
+	defer logger.Sync()
+	sugar := logger.Sugar()
+
+	sugar.Info("Created a logger")
+
 	// Init storage
 	storage := memory.New()
 
@@ -26,10 +38,15 @@ func run() error {
 	// Init routes
 	r := router.New(server)
 
-	fmt.Println("Running server on address", config.Addr)
-	err := http.ListenAndServe(config.Addr, r)
+	sugar.Infow(
+		"Starting a server",
+		"addr", strings.TrimPrefix(config.Addr, ":"),
+	)
+
+	err = http.ListenAndServe(config.Addr, r)
 	if err != nil {
 		return fmt.Errorf("can't start the server: %w", err)
 	}
+
 	return nil
 }
