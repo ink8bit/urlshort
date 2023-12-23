@@ -24,12 +24,8 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("cannot initialize zap logger: %w", err)
 	}
-	defer func() error {
-		err := logger.Sync()
-		if err != nil {
-			return fmt.Errorf("logger error: %w", err)
-		}
-		return nil
+	defer func() {
+		_ = logger.Sync()
 	}()
 
 	sugar := logger.Sugar()
