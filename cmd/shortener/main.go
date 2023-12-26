@@ -7,11 +7,10 @@ import (
 	"strings"
 
 	"urlshort/internal/app"
+	"urlshort/internal/app/logger"
 	"urlshort/internal/app/router"
 	"urlshort/internal/config"
 	"urlshort/internal/storage/memory"
-
-	"go.uber.org/zap"
 )
 
 func main() {
@@ -20,17 +19,12 @@ func main() {
 }
 
 func run() error {
-	logger, err := zap.NewDevelopment()
+	logger, err := logger.New()
 	if err != nil {
 		return fmt.Errorf("cannot initialize zap logger: %w", err)
 	}
-	defer func() {
-		_ = logger.Sync()
-	}()
 
-	sugar := logger.Sugar()
-
-	sugar.Info("Created a logger")
+	logger.Info("Created a logger")
 
 	// Init storage
 	storage := memory.New()
@@ -41,7 +35,7 @@ func run() error {
 	// Init routes
 	r := router.New(server)
 
-	sugar.Infow(
+	logger.Infow(
 		"Starting a server",
 		"addr", strings.TrimPrefix(config.Addr, ":"),
 	)
