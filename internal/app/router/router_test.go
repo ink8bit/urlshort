@@ -7,15 +7,16 @@ import (
 	"testing"
 
 	"urlshort/internal/app"
-	"urlshort/internal/config"
 	"urlshort/internal/storage/memory"
 
 	"github.com/stretchr/testify/require"
 )
 
+const baseURL = "http://localhost:8080"
+
 func TestRouterGet(t *testing.T) {
 	storage := memory.New()
-	server := app.NewServer(config.BaseURL, storage)
+	server := app.NewServer(baseURL, storage)
 	r := New(server)
 
 	srv := httptest.NewServer(r)
@@ -49,7 +50,7 @@ func TestRouterGet(t *testing.T) {
 
 func TestRouterPost(t *testing.T) {
 	storage := memory.New()
-	server := app.NewServer(config.BaseURL, storage)
+	server := app.NewServer(baseURL, storage)
 	r := New(server)
 
 	srv := httptest.NewServer(r)
