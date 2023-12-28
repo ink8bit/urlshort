@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"net/url"
 
-	"urlshort/internal/config"
-
 	"github.com/go-chi/chi/v5"
 )
 
@@ -35,13 +33,13 @@ func (s *Server) ShortURLHandler(w http.ResponseWriter, r *http.Request) {
 				http.StatusBadRequest)
 			return
 		}
-		shortURL := config.BaseURL + "/" + id
+		shortURL := s.baseURL + "/" + id
 		w.WriteHeader(http.StatusCreated)
 		_, _ = w.Write([]byte(shortURL))
 		return
 	}
 
-	shortURL := config.BaseURL + "/" + id
+	shortURL := s.baseURL + "/" + id
 	_, _ = w.Write([]byte(shortURL))
 }
 
