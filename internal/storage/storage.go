@@ -1,15 +1,8 @@
 package storage
 
-type Storage interface {
-	StorageSaver
-	StorageFinder
-}
+import "errors"
 
-type StorageSaver interface {
-	SaveURL(origURL string) (string, error)
-}
-
-type StorageFinder interface {
-	FindURL(shortURL string) (string, error)
-	FindShortURL(origURL string) (string, error)
-}
+var (
+	ErrOrigURLNotFound  = errors.New("original url not found")
+	ErrShortURLNotFound = errors.New("short url not found")
+)
