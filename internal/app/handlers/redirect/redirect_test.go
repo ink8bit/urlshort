@@ -17,10 +17,9 @@ const (
 )
 
 type want struct {
-	code           int
-	url            string
-	contentType    string
-	locationHeader string
+	code        int
+	url         string
+	contentType string
 }
 
 type fakeMemory struct {
