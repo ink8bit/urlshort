@@ -1,9 +1,8 @@
 package memory
 
 import (
-	"errors"
-
 	"urlshort/internal/shorten"
+	"urlshort/internal/storage"
 )
 
 // TODO: it's a temporary solution.
@@ -41,7 +40,7 @@ func (m *Memory) SaveURL(origURL string) (string, error) {
 func (m *Memory) FindURL(shortURL string) (string, error) {
 	origURL, ok := m.origUrls[shortURL]
 	if !ok {
-		return "", errors.New("original url not found")
+		return "", storage.ErrOrigURLNotFound
 	}
 	return origURL, nil
 }
@@ -50,7 +49,7 @@ func (m *Memory) FindURL(shortURL string) (string, error) {
 func (m *Memory) FindShortURL(origURL string) (string, error) {
 	id, ok := m.shortUrls[origURL]
 	if !ok {
-		return "", errors.New("short url not found")
+		return "", storage.ErrShortURLNotFound
 	}
 	return id, nil
 }

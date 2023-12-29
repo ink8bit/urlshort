@@ -5,10 +5,12 @@ import (
 	"log"
 	"net/http"
 
-	"urlshort/internal/app"
-	"urlshort/internal/app/router"
+	"urlshort/internal/app/handlers/redirect"
+	"urlshort/internal/app/handlers/save"
 	"urlshort/internal/config"
 	"urlshort/internal/storage/memory"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func main() {
@@ -24,16 +26,21 @@ func run() error {
 	// Init storage
 	storage := memory.New()
 
-	// Setup and run server
-	server := app.NewServer(cfg.BaseURL, storage)
+	// Init router
+	r := chi.NewRouter()
 
-	// Init routes
-	r := router.New(server)
+	// Handlers
+	r.Get("/{id:^[0-9A-Za-z]+$}", redirect.RedirectHandler(storage))
+	r.Post("/", save.SaveURLHandler(cfg.BaseURL, storage))
 
-	fmt.Println("Running server on address", cfg.Addr)
-	err := http.ListenAndServe(cfg.Addr, r)
-	if err != nil {
-		return fmt.Errorf("can't start the server: %w", err)
+	srv := &http.Server{
+		Addr:    cfg.Addr,
+		Handler: r,
 	}
+
+	if err := srv.ListenAndServe(); err != nil {
+		return fmt.Errorf("cannot start the server: %w", err)
+	}
+
 	return nil
 }
