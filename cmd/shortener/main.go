@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"urlshort/internal/app/handlers/api"
 	"urlshort/internal/app/handlers/redirect"
 	"urlshort/internal/app/handlers/save"
 	mwLog "urlshort/internal/app/middleware/logger"
@@ -41,6 +42,7 @@ func run() error {
 	// Handlers
 	r.Get("/{id:^[0-9A-Za-z]+$}", redirect.RedirectHandler(storage))
 	r.Post("/", save.SaveURLHandler(cfg.BaseURL, storage))
+	r.Post("/api/shorten", api.ShortenHandler(cfg.BaseURL, storage))
 
 	srv := &http.Server{
 		Addr:    cfg.Addr,
