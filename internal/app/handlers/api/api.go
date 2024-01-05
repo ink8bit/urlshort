@@ -16,7 +16,7 @@ type payload struct {
 	URL string `json:"url"`
 }
 
-type response struct {
+type Response struct {
 	Result string `json:"result"`
 }
 
@@ -50,7 +50,7 @@ func ShortenHandler(baseURL string, shortener Shortener) http.HandlerFunc {
 		}
 
 		shortURL := baseURL + "/" + id
-		resp, err := json.Marshal(response{Result: shortURL})
+		resp, err := json.Marshal(Response{Result: shortURL})
 		if err != nil {
 			http.Error(w, err.Error(),
 				http.StatusInternalServerError)
