@@ -8,7 +8,10 @@ import (
 	"urlshort/internal/app/handlers/api"
 	"urlshort/internal/app/handlers/redirect"
 	"urlshort/internal/app/handlers/save"
+
+	mwGzip "urlshort/internal/app/middleware/gzip"
 	mwLog "urlshort/internal/app/middleware/logger"
+
 	"urlshort/internal/config"
 	"urlshort/internal/logger"
 	"urlshort/internal/storage/memory"
@@ -38,6 +41,7 @@ func run() error {
 
 	// Middleware
 	r.Use(mwLog.Log(logger))
+	r.Use(mwGzip.Compress())
 
 	// Handlers
 	r.Get("/{id:^[0-9A-Za-z]+$}", redirect.RedirectHandler(storage))
