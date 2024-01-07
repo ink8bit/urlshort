@@ -5,9 +5,15 @@ import (
 	"log"
 	"net/http"
 
+	"urlshort/internal/app/handlers/api"
 	"urlshort/internal/app/handlers/redirect"
 	"urlshort/internal/app/handlers/save"
+
+	mwGzip "urlshort/internal/app/middleware/gzip"
+	mwLog "urlshort/internal/app/middleware/logger"
+
 	"urlshort/internal/config"
+	"urlshort/internal/logger"
 	"urlshort/internal/storage/memory"
 
 	"github.com/go-chi/chi/v5"
@@ -21,7 +27,11 @@ func run() error {
 	// Init config
 	cfg := config.Load()
 
-	// TODO: Init logger
+	// Init logger
+	logger, err := logger.New()
+	if err != nil {
+		return fmt.Errorf("cannot create logger")
+	}
 
 	// Init storage
 	storage := memory.New()
@@ -29,9 +39,14 @@ func run() error {
 	// Init router
 	r := chi.NewRouter()
 
+	// Middleware
+	r.Use(mwLog.Log(logger))
+	r.Use(mwGzip.Compress())
+
 	// Handlers
 	r.Get("/{id:^[0-9A-Za-z]+$}", redirect.RedirectHandler(storage))
 	r.Post("/", save.SaveURLHandler(cfg.BaseURL, storage))
+	r.Post("/api/shorten", api.ShortenHandler(cfg.BaseURL, storage))
 
 	srv := &http.Server{
 		Addr:    cfg.Addr,
