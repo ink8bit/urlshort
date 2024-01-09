@@ -34,7 +34,10 @@ func run() error {
 	}
 
 	// Init storage
-	storage := memory.New()
+	storage, err := memory.New(cfg.StoragePath)
+	if err != nil {
+		return fmt.Errorf("cannot initialize storage: %w", err)
+	}
 
 	// Init router
 	r := chi.NewRouter()
