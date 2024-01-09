@@ -57,7 +57,12 @@ func TestSaveURLHandler(t *testing.T) {
 		},
 	}
 
-	storage := memory.New()
+	storage, _ := memory.New("records.json")
+
+	t.Cleanup(func() {
+		err := storage.Cleanup()
+		require.NoError(t, err)
+	})
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

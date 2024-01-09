@@ -1,8 +1,14 @@
 package memory
 
 import (
+	"bufio"
+	"encoding/json"
+	"fmt"
+	"os"
 	"urlshort/internal/shorten"
 	"urlshort/internal/storage"
+
+	"github.com/google/uuid"
 )
 
 // TODO: it's a temporary solution.
@@ -18,21 +24,68 @@ import (
 type Memory struct {
 	shortUrls map[string]string
 	origUrls  map[string]string
+	file      *os.File
 }
 
-func New() *Memory {
-	m := Memory{
-		shortUrls: make(map[string]string),
-		origUrls:  make(map[string]string),
+func New(filename string) (*Memory, error) {
+	file, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644) //nolint:gosec,gomnd // false positive
+	if err != nil {
+		return nil, fmt.Errorf("cannot create or open file: %w", err)
 	}
-	return &m
+
+	stat, err := file.Stat()
+	if err != nil {
+		return nil, fmt.Errorf("cannot get file info: %w", err)
+	}
+
+	shortUrls := make(map[string]string)
+	origUrls := make(map[string]string)
+
+	if stat.Size() == 0 {
+		m := Memory{
+			shortUrls: shortUrls,
+			origUrls:  origUrls,
+			file:      file,
+		}
+		return &m, nil
+	}
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		var rec Record
+		if err := json.Unmarshal(scanner.Bytes(), &rec); err != nil {
+			return nil, fmt.Errorf("error while unmarshaling record: %w", err)
+		}
+		shortUrls[rec.OriginalURL] = rec.ShortURL
+		origUrls[rec.ShortURL] = rec.OriginalURL
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("error while reading file: %w", err)
+	}
+
+	m := Memory{
+		shortUrls: shortUrls,
+		origUrls:  origUrls,
+		file:      file,
+	}
+	return &m, nil
 }
 
 // SaveURL saves original and shortened urls to the storage.
 func (m *Memory) SaveURL(origURL string) (string, error) {
 	id := shorten.GenRandomStr()
+	uuidStr := uuid.New().String()
 	m.shortUrls[origURL] = id
 	m.origUrls[id] = origURL
+	rec := Record{
+		UUID:        uuidStr,
+		ShortURL:    id,
+		OriginalURL: origURL,
+	}
+	if err := rec.Save(m.file.Name()); err != nil {
+		return "", fmt.Errorf("cannot save data to file: %w", err)
+	}
 	return id, nil
 }
 
@@ -58,5 +111,8 @@ func (m *Memory) FindShortURL(origURL string) (string, error) {
 func (m *Memory) Cleanup() error {
 	m.shortUrls = make(map[string]string)
 	m.origUrls = make(map[string]string)
+	if err := os.Remove(m.file.Name()); err != nil {
+		return fmt.Errorf("cannot remove file: %w", err)
+	}
 	return nil
 }
