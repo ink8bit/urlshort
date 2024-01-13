@@ -22,8 +22,11 @@ func (r *Record) Save(fname string) error {
 		return fmt.Errorf("error while opening file: %w", err)
 	}
 	defer func() {
-		_ = f.Close()
+		err = f.Close()
 	}()
+	if err != nil {
+		return fmt.Errorf("error while closing file: %w", err)
+	}
 	if _, err := f.WriteString(string(data) + "\n"); err != nil {
 		return fmt.Errorf("cannot write data to file: %w", err)
 	}
