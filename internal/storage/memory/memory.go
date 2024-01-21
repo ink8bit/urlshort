@@ -116,3 +116,7 @@ func (m *Memory) Cleanup() error {
 	}
 	return nil
 }
+
+func (m *Memory) Ping() error {
+	return nil
+}

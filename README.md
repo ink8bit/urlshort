@@ -64,3 +64,22 @@ brew services stop postgresql
 ```console
 psql postgres
 ```
+
+#### View users
+
+```console
+\du
+```
+
+#### Create a new user
+
+```console
+CREATE ROLE postgres WITH LOGIN PASSWORD '<YOUR_PWD>';
+ALTER ROLE postgres CREATEDB;
+```
+
+#### Create a database
+
+```console
+CREATE DATABASE shorturls;
+```

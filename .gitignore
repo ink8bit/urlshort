@@ -24,3 +24,4 @@ vendor/
 
 golangci-lint/
 *.json
+*.txt
