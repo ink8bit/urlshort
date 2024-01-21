@@ -39,3 +39,28 @@ View test coverage in browser:
 ```console
 go tool cover -html=c.out
 ```
+
+## PostgreSQL
+
+> This installation steps provided for macOS only.
+
+### Installation
+
+> View [docs](https://wiki.postgresql.org/wiki/Homebrew)
+
+```console
+brew install postgres
+```
+
+### Start and stop postgres
+
+```console
+brew services start postgresql
+brew services stop postgresql
+```
+
+### Setup
+
+```console
+psql postgres
+```
