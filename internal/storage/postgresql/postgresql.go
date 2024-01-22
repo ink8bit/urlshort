@@ -9,6 +9,13 @@ import (
 	"urlshort/internal/storage"
 )
 
+const createQuery = `
+CREATE TABLE IF NOT EXISTS urls(
+	id INTEGER PRIMARY KEY,
+	orig_url TEXT NOT NULL,
+	short_url TEXT NOT NULL);
+`
+
 type Storage struct {
 	db *sql.DB
 }
@@ -23,6 +30,17 @@ func New(conn string) (*Storage, error) {
 	err = db.Ping()
 	if err != nil {
 		return nil, storage.ErrDBConnection
+	}
+
+	stmt, err := db.Prepare(createQuery)
+	if err != nil {
+		return nil, fmt.Errorf("error while preparing table creation: %w", err)
+	}
+	defer stmt.Close() //nolint:errcheck // self-explanatory
+
+	_, err = stmt.Exec()
+	if err != nil {
+		return nil, fmt.Errorf("error while executing table creation: %w", err)
 	}
 
 	s := Storage{db: db}
