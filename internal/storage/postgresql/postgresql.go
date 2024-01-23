@@ -6,14 +6,12 @@ import (
 
 	_ "github.com/lib/pq"
 
+	"urlshort/internal/shorten"
 	"urlshort/internal/storage"
 )
 
 const createQuery = `
-CREATE TABLE IF NOT EXISTS urls(
-	id INTEGER PRIMARY KEY,
-	orig_url TEXT NOT NULL,
-	short_url TEXT NOT NULL);
+
 `
 
 type Storage struct {
@@ -32,13 +30,11 @@ func New(conn string) (*Storage, error) {
 		return nil, storage.ErrDBConnection
 	}
 
-	stmt, err := db.Prepare(createQuery)
-	if err != nil {
-		return nil, fmt.Errorf("error while preparing table creation: %w", err)
-	}
-	defer stmt.Close() //nolint:errcheck // self-explanatory
-
-	_, err = stmt.Exec()
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS urls(
+id SERIAL PRIMARY KEY,
+orig_url TEXT NOT NULL,
+short_url TEXT NOT NULL);
+`)
 	if err != nil {
 		return nil, fmt.Errorf("error while executing table creation: %w", err)
 	}
@@ -50,24 +46,46 @@ func New(conn string) (*Storage, error) {
 
 // SaveURL saves original and shortened urls to the storage.
 func (s *Storage) SaveURL(origURL string) (string, error) {
-	// TODO: add logic
-	return "id", nil
+	id := shorten.GenRandomStr()
+	stmt := `INSERT INTO urls(orig_url, short_url) VALUES($1, $2);`
+	_, err := s.db.Exec(stmt, origURL, id)
+	if err != nil {
+		return "", fmt.Errorf(
+			"error while inserting data to db: %w", err)
+	}
+	return id, nil
 }
 
 // FindURL returns original url by a given short one.
 func (s *Storage) FindURL(shortURL string) (string, error) {
-	// TODO: add logic
-	return "origURL", nil
+	stmt := `SELECT orig_url FROM urls WHERE short_url=$1;`
+	var origURL string
+	row := s.db.QueryRow(stmt, shortURL)
+	err := row.Scan(&origURL)
+	if err != nil {
+		return "", fmt.Errorf("no rows were returned: %w", err)
+	}
+	return origURL, nil
 }
 
 // FindShortURL returns short url by a given original url.
 func (s *Storage) FindShortURL(origURL string) (string, error) {
-	// TODO: add logic
-	return "id", nil
+	stmt := `SELECT shortURL FROM urls WHERE orig_url=$1;`
+	var shortURL string
+	row := s.db.QueryRow(stmt, origURL)
+	err := row.Scan(&shortURL)
+	if err != nil {
+		return "", fmt.Errorf("no rows were returned: %w", err)
+	}
+	return shortURL, nil
 }
 
 func (s *Storage) Cleanup() error {
-	// TODO: add logic
+	stmt := `TRUNCATE TABLE urls`
+	_, err := s.db.Exec(stmt)
+	if err != nil {
+		return fmt.Errorf("error while truncating table: %w", err)
+	}
 	return nil
 }
 
