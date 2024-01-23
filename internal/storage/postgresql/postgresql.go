@@ -10,10 +10,6 @@ import (
 	"urlshort/internal/storage"
 )
 
-const createQuery = `
-
-`
-
 type Storage struct {
 	db *sql.DB
 }
@@ -63,7 +59,7 @@ func (s *Storage) FindURL(shortURL string) (string, error) {
 	row := s.db.QueryRow(stmt, shortURL)
 	err := row.Scan(&origURL)
 	if err != nil {
-		return "", fmt.Errorf("no rows were returned: %w", err)
+		return "", storage.ErrDBNoRows
 	}
 	return origURL, nil
 }
@@ -75,7 +71,7 @@ func (s *Storage) FindShortURL(origURL string) (string, error) {
 	row := s.db.QueryRow(stmt, origURL)
 	err := row.Scan(&shortURL)
 	if err != nil {
-		return "", fmt.Errorf("no rows were returned: %w", err)
+		return "", storage.ErrDBNoRows
 	}
 	return shortURL, nil
 }
