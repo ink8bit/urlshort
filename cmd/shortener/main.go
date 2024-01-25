@@ -63,7 +63,10 @@ func run() error {
 	// Handlers
 	r.Get("/{id:^[0-9A-Za-z]+$}", redirect.RedirectHandler(storage))
 	r.Post("/", save.SaveURLHandler(cfg.BaseURL, storage))
+
 	r.Post("/api/shorten", api.ShortenHandler(cfg.BaseURL, storage))
+	r.Post("/api/shorten/batch", api.ShortenBatchHandler(cfg.BaseURL, storage))
+
 	r.Get("/ping", ping.DBConHandler(storage))
 
 	srv := &http.Server{
