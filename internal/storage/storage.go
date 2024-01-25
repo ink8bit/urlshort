@@ -5,7 +5,7 @@ import "errors"
 var (
 	ErrOrigURLNotFound  = errors.New("original url not found")
 	ErrShortURLNotFound = errors.New("short url not found")
-	ErrDBConnection     = errors.New("cannot connect to the databse")
+	ErrDBConnection     = errors.New("cannot connect to the database")
 	ErrDBNoRows         = errors.New("no rows returned")
 )
 
