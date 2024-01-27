@@ -1,9 +1,11 @@
 package save
 
 import (
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
+	"urlshort/internal/storage"
 )
 
 type URLSaver interface {
@@ -27,23 +29,32 @@ func SaveURLHandler(baseURL string, urlSaver URLSaver) http.HandlerFunc {
 				http.StatusBadRequest)
 			return
 		}
+
 		origURL := u.String()
+
 		w.Header().Set("Content-Type", "text/plain")
-		id, err := urlSaver.FindShortURL(origURL)
+
+		id, err := urlSaver.SaveURL(origURL)
 		if err != nil {
-			id, err := urlSaver.SaveURL(origURL)
-			if err != nil {
-				http.Error(w, http.StatusText(http.StatusBadRequest),
-					http.StatusBadRequest)
+			if errors.Is(err, storage.ErrOrigURLExists) {
+				id, err := urlSaver.FindShortURL(origURL)
+				if err != nil {
+					http.Error(w, http.StatusText(http.StatusBadRequest),
+						http.StatusBadRequest)
+					return
+				}
+				shortURL := baseURL + "/" + id
+				w.WriteHeader(http.StatusConflict)
+				_, _ = w.Write([]byte(shortURL))
 				return
 			}
-			shortURL := baseURL + "/" + id
-			w.WriteHeader(http.StatusCreated)
-			_, _ = w.Write([]byte(shortURL))
+			http.Error(w, http.StatusText(http.StatusBadRequest),
+				http.StatusBadRequest)
 			return
 		}
 
 		shortURL := baseURL + "/" + id
+		w.WriteHeader(http.StatusCreated)
 		_, _ = w.Write([]byte(shortURL))
 	}
 }
