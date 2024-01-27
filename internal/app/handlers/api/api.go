@@ -3,8 +3,10 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/url"
+	"urlshort/internal/storage"
 )
 
 const (
@@ -47,8 +49,28 @@ func ShortenHandler(baseURL string, shortener Shortener) http.HandlerFunc {
 		}
 
 		origURL := u.String()
+
 		id, err := shortener.SaveURL(origURL)
 		if err != nil {
+			if errors.Is(err, storage.ErrOrigURLExists) {
+				id, err := shortener.FindShortURL(origURL)
+				if err != nil {
+					http.Error(w, http.StatusText(http.StatusBadRequest),
+						http.StatusBadRequest)
+					return
+				}
+				shortURL := baseURL + "/" + id
+				resp, err := json.Marshal(Response{Result: shortURL})
+				if err != nil {
+					http.Error(w, err.Error(),
+						http.StatusInternalServerError)
+					return
+				}
+				w.Header().Set(contentType, applicationJSON)
+				w.WriteHeader(http.StatusConflict)
+				_, _ = w.Write(resp)
+				return
+			}
 			http.Error(w, http.StatusText(http.StatusBadRequest),
 				http.StatusBadRequest)
 			return

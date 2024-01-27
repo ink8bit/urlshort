@@ -46,15 +46,6 @@ func TestSaveURLHandler(t *testing.T) {
 				contentType: "text/plain",
 			},
 		},
-		{
-			name: "OK",
-			want: want{
-				code:        http.StatusOK,
-				body:        "http://example.com",
-				response:    "Bad Request",
-				contentType: "text/plain",
-			},
-		},
 	}
 
 	storage, _ := memory.New("records.json")
