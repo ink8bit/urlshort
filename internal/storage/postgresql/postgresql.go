@@ -52,10 +52,15 @@ var pqErr *pq.Error
 
 // SaveURL saves original and shortened urls to the storage.
 func (s *Storage) SaveURL(origURL string) (string, error) {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return "", fmt.Errorf("error while tx begin: %w", err)
+	}
+
 	id := shorten.GenRandomStr()
 	stmt := `INSERT INTO urls (orig_url, short_url)
 	VALUES ($1, $2)`
-	_, err := s.db.Exec(stmt, origURL, id)
+	_, err = tx.Exec(stmt, origURL, id)
 	if err != nil {
 		if errors.As(err, &pqErr) {
 			if pqErr.Code == pgerrcode.UniqueViolation {
@@ -65,6 +70,11 @@ func (s *Storage) SaveURL(origURL string) (string, error) {
 		return "", fmt.Errorf(
 			"error while inserting data to db: %w", err)
 	}
+
+	if err := tx.Commit(); err != nil {
+		return "", fmt.Errorf("error while tx commit: %w", err)
+	}
+
 	return id, nil
 }
 
