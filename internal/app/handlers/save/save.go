@@ -5,11 +5,12 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"urlshort/internal/app/middleware/auth"
 	"urlshort/internal/storage"
 )
 
 type URLSaver interface {
-	SaveURL(origURL string) (string, error)
+	SaveURL(origURL string, userID int) (string, error)
 	FindShortURL(origURL string) (string, error)
 }
 
@@ -34,7 +35,9 @@ func SaveURLHandler(baseURL string, urlSaver URLSaver) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "text/plain")
 
-		id, err := urlSaver.SaveURL(origURL)
+		userID := auth.CheckAuth(r)
+
+		id, err := urlSaver.SaveURL(origURL, userID)
 		if err != nil {
 			if errors.Is(err, storage.ErrOrigURLExists) {
 				id, err := urlSaver.FindShortURL(origURL)

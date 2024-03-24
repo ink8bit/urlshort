@@ -73,7 +73,7 @@ func New(filename string) (*Memory, error) {
 }
 
 // SaveURL saves original and shortened urls to the storage.
-func (m *Memory) SaveURL(origURL string) (string, error) {
+func (m *Memory) SaveURL(origURL string, userID int) (string, error) {
 	id := shorten.GenRandomStr()
 	uuidStr := uuid.New().String()
 	m.shortUrls[origURL] = id
@@ -82,6 +82,7 @@ func (m *Memory) SaveURL(origURL string) (string, error) {
 		UUID:        uuidStr,
 		ShortURL:    id,
 		OriginalURL: origURL,
+		UserID:      userID,
 	}
 	if err := rec.Save(m.file.Name()); err != nil {
 		return "", fmt.Errorf("cannot save data to file: %w", err)
