@@ -31,7 +31,8 @@ func New(conn string) (*Storage, error) {
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS urls(
 	id SERIAL PRIMARY KEY,
 	orig_url TEXT NOT NULL,
-	short_url TEXT NOT NULL);
+	short_url TEXT NOT NULL,
+	user_id INT NOT NULL);
 	`)
 
 	if err != nil {
@@ -51,16 +52,16 @@ func New(conn string) (*Storage, error) {
 var pqErr *pq.Error
 
 // SaveURL saves original and shortened urls to the storage.
-func (s *Storage) SaveURL(origURL string) (string, error) {
+func (s *Storage) SaveURL(origURL string, userID int) (string, error) {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return "", fmt.Errorf("error while tx begin: %w", err)
 	}
 
-	id := shorten.GenRandomStr()
-	stmt := `INSERT INTO urls (orig_url, short_url)
-	VALUES ($1, $2)`
-	_, err = tx.Exec(stmt, origURL, id)
+	shortURL := shorten.GenRandomStr()
+	stmt := `INSERT INTO urls (orig_url, short_url, user_id)
+	VALUES ($1, $2, $3)`
+	_, err = tx.Exec(stmt, origURL, shortURL, userID)
 	if err != nil {
 		if errors.As(err, &pqErr) {
 			if pqErr.Code == pgerrcode.UniqueViolation {
@@ -75,7 +76,7 @@ func (s *Storage) SaveURL(origURL string) (string, error) {
 		return "", fmt.Errorf("error while tx commit: %w", err)
 	}
 
-	return id, nil
+	return shortURL, nil
 }
 
 // FindURL returns original url by a given short one.

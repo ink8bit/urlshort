@@ -11,7 +11,7 @@ var (
 )
 
 type Storager interface {
-	SaveURL(origURL string) (string, error)
+	SaveURL(origURL string, userID int) (string, error)
 	FindURL(shortURL string) (string, error)
 	FindShortURL(origURL string) (string, error)
 	Cleanup() error

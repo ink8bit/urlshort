@@ -11,6 +11,7 @@ import (
 	"urlshort/internal/app/handlers/save"
 	"urlshort/internal/storage"
 
+	auth "urlshort/internal/app/middleware/auth"
 	mwGzip "urlshort/internal/app/middleware/gzip"
 	mwLog "urlshort/internal/app/middleware/logger"
 
@@ -60,14 +61,18 @@ func run() error {
 	r.Use(mwLog.Log(logger))
 	r.Use(mwGzip.Compress())
 
-	// Handlers
+	// Public handlers
 	r.Get("/{id:^[0-9A-Za-z]+$}", redirect.RedirectHandler(storage))
-	r.Post("/", save.SaveURLHandler(cfg.BaseURL, storage))
-
-	r.Post("/api/shorten", api.ShortenHandler(cfg.BaseURL, storage))
-	r.Post("/api/shorten/batch", api.ShortenBatchHandler(cfg.BaseURL, storage))
-
 	r.Get("/ping", ping.DBConHandler(storage))
+
+	// Private handlers
+	r.Group(func(r chi.Router) {
+		r.Use(auth.Auth())
+
+		r.Post("/", save.SaveURLHandler(cfg.BaseURL, storage))
+		r.Post("/api/shorten", api.ShortenHandler(cfg.BaseURL, storage))
+		r.Post("/api/shorten/batch", api.ShortenBatchHandler(cfg.BaseURL, storage))
+	})
 
 	srv := &http.Server{
 		Addr:    cfg.Addr,

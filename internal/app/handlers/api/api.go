@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"urlshort/internal/app/middleware/auth"
 	"urlshort/internal/storage"
 )
 
@@ -15,7 +16,7 @@ const (
 )
 
 type Shortener interface {
-	SaveURL(origURL string) (string, error)
+	SaveURL(origURL string, userID int) (string, error)
 	FindShortURL(origURL string) (string, error)
 }
 
@@ -50,7 +51,9 @@ func ShortenHandler(baseURL string, shortener Shortener) http.HandlerFunc {
 
 		origURL := u.String()
 
-		id, err := shortener.SaveURL(origURL)
+		userID := auth.CheckAuth(r)
+
+		id, err := shortener.SaveURL(origURL, userID)
 		if err != nil {
 			if errors.Is(err, storage.ErrOrigURLExists) {
 				id, err := shortener.FindShortURL(origURL)
@@ -133,7 +136,9 @@ func ShortenBatchHandler(baseURL string, shortener Shortener) http.HandlerFunc {
 			}
 
 			origURL := u.String()
-			id, err := shortener.SaveURL(origURL)
+			userID := auth.CheckAuth(r)
+
+			id, err := shortener.SaveURL(origURL, userID)
 			if err != nil {
 				http.Error(w, http.StatusText(http.StatusBadRequest),
 					http.StatusBadRequest)
